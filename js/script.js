@@ -5,8 +5,6 @@ const moduleList = document.querySelector(".module-list");
 const refreshbtn = document.getElementById("refreshbtn");
 let refresh = true;
 
-let starting_dates = [];
-
 //button de rafraichissement
 refreshbtn.onclick = (e) => {
   e.preventDefault(); //empecher le comportement par defaut
@@ -59,17 +57,19 @@ xhr.onload = () => {
       //afficher les données
       let output = [];
       jsondata.map((module) => {
-        //recuperer les dates de demarrage de tous les modules dans un tableau pour initialiser les timers
-        starting_dates = [...starting_dates, module.starting_date];
         //html pour chaque module
         output = [
           ...output,
           `<div class='card module-${module.id}'><div class='card-body'>
-          <h5 class='card-title'>${module.name}</h5>
+          <h5 class='card-title'>${module.name}<span class='indicator state-${module.state}'></span></h5>
+          <div class="card-text">
+              <p>Vitesse : ${module.speed}</p>
+              <p>Temperature : ${module.temp}</p>
+              <p>Passagers : ${module.passengers}</p>
+          </div>
           </div></div>`,
         ];
       });
-      console.log(starting_dates);
       //conversion du tableau vers une chaine de caractères sans virgules.
       moduleList.innerHTML = output.join("");
     }
@@ -79,7 +79,7 @@ xhr.send();
 
 //rafraichir les infos toutes les 1000ms
 setInterval(() => {
-  if (refresh) {
+  if (!refresh) {
     //rafraichissement est activé
     let xhr = new XMLHttpRequest();
     xhr.open("GET", "./php/get_module.php", true);
@@ -102,7 +102,15 @@ setInterval(() => {
 
             output = [
               ...output,
-              `<div class='card module-${module.id}'><div class='card-body'><h5 class='card-title'>${module.name}</h5><p>${timer}</p></div></div>`,
+              `<div class='card module-${module.id}'><div class='card-body'>
+              <h5 class='card-title'>${module.name}<span class='indicator state-${module.state}'></span></h5>
+              <h6 class="card-subtitle timer mb-2 text-muted">${timer}</h6>
+              <div class="card-text">
+                <p>Vitesse : ${module.speed}</p>
+                <p>Temperature : ${module.temp}</p>
+                <p>Passagers : ${module.passengers}</p>
+              </div>
+              </div></div>`,
             ];
           });
           //conversion du tableau vers une chaine de caractères sans virgules.
@@ -119,12 +127,16 @@ function msToHMS(ms) {
   //convertir en secondes
   let seconds = ms / 1000;
   //recuperer les heures
-  const hours = parseInt(seconds / 3600);
+  let hours = parseInt(seconds / 3600);
   seconds = seconds % 3600;
   //recuperer les minutes
-  const minutes = parseInt(seconds / 60);
+  let minutes = parseInt(seconds / 60);
   //recuperer les secondes restantes
   seconds = Math.trunc(seconds % 60);
 
-  return hours + " h " + minutes + " m " + seconds;
+  if (hours < 1) {
+    return minutes + " m " + seconds + " s";
+  } else {
+    return hours + " h " + minutes + " m " + seconds + " s";
+  }
 }

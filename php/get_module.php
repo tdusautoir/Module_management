@@ -6,7 +6,7 @@ require 'config.php';
 
 $data = array();
 
-$getModule = $db->query("SELECT module.id, module.name, module.starting_date, history.temp, history.speed, history.passengers FROM module INNER JOIN history ON module.id = history.id_module ");
+$getModule = $db->query("SELECT module.id, module.name, module.state, module.starting_date, history.temp, history.speed, history.passengers FROM module INNER JOIN history ON module.id = history.id_module ");
 
 if ($getModule->rowCount() > 0) {
     while ($module = $getModule->fetch()) {
@@ -14,6 +14,7 @@ if ($getModule->rowCount() > 0) {
             'id' => $module['id'],
             'name' => $module['name'],
             'starting_date' => $module['starting_date'],
+            'state' => $module['state'],
             'temp' => $module['temp'],
             'speed' => $module['speed'],
             'passagers' => $module['passengers'],

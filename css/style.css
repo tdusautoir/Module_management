@@ -5,6 +5,11 @@
     padding: 20px;
 }
 
+p{
+    margin: 0;
+    font-size: 14px;
+}
+
 h1{
     margin-bottom: 40px;
     text-align: center;
@@ -20,4 +25,30 @@ h1{
 
 .module-list .card{
     width: 200px;
+}
+
+.module-list .card .card-text{
+    margin-top: 30px;
+}
+
+.indicator{
+    content: "";
+    width: 12px;
+    height: 12px;
+    display: block;
+    float: right;
+    border-radius: 100%;
+}
+
+
+.indicator.state-2{
+    background: #de2828;
+}
+
+.indicator.state-1{
+    background: #04b02f;
+}
+
+.indicator.state-0{
+    background: #c3c3c3;;
 }

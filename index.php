@@ -26,7 +26,9 @@
                 <button id="submit" type="submit" name="submit" class="btn btn-primary">Ajouter un module</button>
             </div>
         </form>
-        <div class="module-list">
+        <div class="module-container">
+            <div class="module-list">
+            </div>
         </div>
 
         <button id="refreshbtn">Pause</button>
