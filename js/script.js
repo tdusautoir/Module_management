@@ -65,15 +65,18 @@ xhr.onload = () => {
             ...output,
             `<div class='card ${
               module.state === 2 ? "background-red" : "background-gray"
-            } 
-            module-${module.id}'>
+            } module-${module.id}'>
               <div class='card-body'>
                 <h5 class='card-title'>${
                   module.name
                 }<span class='indicator state-${module.state}'></span></h5>
                 <div class="card-text">
-                  <p>Vitesse : ${module.speed}</p>
-                  <p>Temperature : ${module.temp}</p>
+                  <p>Vitesse : ${
+                    module.speed === null ? "null" : module.speed + " km/h"
+                  }</p>
+                  <p>Temperature : ${
+                    module.temp === null ? "null" : module.temp + " °C"
+                  }</p>
                   <p>Passagers : ${module.passengers}</p>
                 </div>
                 <button class='btn ${
@@ -87,13 +90,21 @@ xhr.onload = () => {
             ...output,
             `<div class='card module-${module.id}'>
               <div class='card-body'>
-              <h5 class='card-title'>${module.name}<span class='indicator state-${module.state}'></span></h5>
+              <h5 class='card-title'>${
+                module.name
+              }<span class='indicator state-${module.state}'></span></h5>
                 <div class="card-text">
-                  <p>Vitesse : ${module.speed}</p>
-                  <p>Temperature : ${module.temp}</p>
+                  <p>Vitesse : ${
+                    module.speed === null ? "null" : module.speed + " km/h"
+                  }</p>
+                  <p>Temperature : ${
+                    module.temp === null ? "null" : module.temp + " °C"
+                  }</p>
                   <p>Passagers : ${module.passengers}</p>
                 </div>
-                <button class='btn btn-light' onclick='changeState(${module.id})'>éteindre</button>
+                <button class='btn btn-light' onclick='changeState(${
+                  module.id
+                })'>éteindre</button>
               </div>
             </div>`,
           ];
@@ -135,8 +146,7 @@ setInterval(() => {
                 ...output,
                 `<div class='card ${
                   module.state == 2 ? "background-red" : "background-gray"
-                } 
-                module-${module.id}'>
+                } module-${module.id}'>
                   <div class='card-body'>
                     <h5 class='card-title'>${
                       module.name
@@ -145,8 +155,12 @@ setInterval(() => {
                       module.state == 2 ? "En panne" : "Éteint"
                     }</h6>
                     <div class="card-text">
-                      <p>Vitesse : ${module.speed}</p>
-                      <p>Temperature : ${module.temp}</p>
+                      <p>Vitesse : ${
+                        module.speed === null ? "null" : module.speed + " km/h"
+                      }</p>
+                      <p>Temperature : ${
+                        module.temp === null ? "null" : module.temp + " °C"
+                      }</p>
                       <p>Passagers : ${module.passengers}</p>
                     </div>
                     <button class='btn ${
@@ -160,14 +174,22 @@ setInterval(() => {
                 ...output,
                 `<div class='card module-${module.id}'>
                   <div class='card-body'>
-                    <h5 class='card-title'>${module.name}<span class='indicator state-${module.state}'></span></h5>
+                    <h5 class='card-title'>${
+                      module.name
+                    }<span class='indicator state-${module.state}'></span></h5>
                     <h6 class="card-subtitle timer mb-2 text-muted">${timer}</h6>
                     <div class="card-text">
-                      <p>Vitesse : ${module.speed}</p>
-                      <p>Temperature : ${module.temp}</p>
+                      <p>Vitesse : ${
+                        module.speed === null ? "null" : module.speed + " km/h"
+                      }</p>
+                      <p>Temperature : ${
+                        module.temp === null ? "null" : module.temp + " °C"
+                      }</p>
                       <p>Passagers : ${module.passengers}</p>
                     </div>
-                    <button class='btn btn-light' onclick='changeState(${module.id})'>éteindre</button>
+                    <button class='btn btn-light' onclick='changeState(${
+                      module.id
+                    })'>éteindre</button>
                   </div>
                 </div>`,
               ];
@@ -180,7 +202,7 @@ setInterval(() => {
     };
     xhr.send();
   }
-}, 1000);
+}, 2000);
 
 //millisecondes vers hh:mm:ss
 function msToHMS(ms) {
@@ -203,9 +225,39 @@ function msToHMS(ms) {
 
 //script pour changer l'etat aléatoirement
 function changeRandomState() {
-  //Ajax, ajout du module
+  if (!refresh) {
+    //Ajax, ajout du module
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", "./php/change_random_state.php", true);
+    xhr.onload = () => {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        if (xhr.status === 200) {
+          let data = xhr.response;
+          console.log(data);
+          if (data == "success") {
+            //php return success
+          } else {
+            //php return an error
+          }
+        }
+      }
+    };
+    xhr.send();
+
+    var min = 5,
+      max = 20;
+    var rand = Math.floor(Math.random() * (max - min + 1) + min); //generer nombre aleatoire entre 5 et 20
+    console.log("Wait for " + rand + " seconds");
+    setTimeout(changeRandomState, rand * 1000);
+  }
+}
+setTimeout(changeRandomState, 5000);
+
+//changer l'etat du module au click du bouton
+function changeState(moduleId) {
   let xhr = new XMLHttpRequest();
-  xhr.open("POST", "./php/change_random_state.php", true);
+  let url = "./php/change_state.php?id=" + moduleId;
+  xhr.open("POST", url, true);
   xhr.onload = () => {
     if (xhr.readyState === XMLHttpRequest.DONE) {
       if (xhr.status === 200) {
@@ -220,31 +272,26 @@ function changeRandomState() {
     }
   };
   xhr.send();
-
-  var min = 5,
-    max = 30;
-  var rand = Math.floor(Math.random() * (max - min + 1) + min); //generer nombre aleatoire entre 5 et 30
-  console.log("Wait for " + rand + " seconds");
-  setTimeout(changeRandomState, rand * 1000);
 }
 
-// setTimeout(changeRandomState, 5000);
-
-// function changeState() {
-//   let xhr = new XMLHttpRequest();
-//   xhr.open("POST", "./php/change_state.php", true);
-//   xhr.onload = () => {
-//     if (xhr.readyState === XMLHttpRequest.DONE) {
-//       if (xhr.status === 200) {
-//         let data = xhr.response;
-//         console.log(data);
-//         if (data == "success") {
-//           //php return success
-//         } else {
-//           //php return an error
-//         }
-//       }
-//     }
-//   };
-//   xhr.send();
-// }
+//changer les valeurs des modules aléatoirement toutes les 3 secondes
+setInterval(() => {
+  if (!refresh) {
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", "./php/update_module.php", true);
+    xhr.onload = () => {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        if (xhr.status === 200) {
+          let data = xhr.response;
+          console.log(data);
+          if (data == "success") {
+            //php return success
+          } else {
+            //php return an error
+          }
+        }
+      }
+    };
+    xhr.send();
+  }
+}, 3000);

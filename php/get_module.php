@@ -6,18 +6,20 @@ require_once 'config.php';
 
 $data = array();
 
-$getModule = $db->query("SELECT module.id, module.name, module.state, module.starting_date, history.temp, history.speed, history.passengers FROM module INNER JOIN history ON module.id = history.id_module ");
+
+//requete afin de recuperer le dernier historique de tous les différents modules
+$getModule = $db->query("SELECT * FROM history INNER JOIN (SELECT MAX(history.id) AS id, module.name, module.state, module.starting_date FROM history INNER JOIN module ON history.id_module = module.id GROUP BY id_module) maxid ON history.id = maxid.id");
 
 if ($getModule->rowCount() > 0) {
     while ($module = $getModule->fetch()) {
         $moduleData = array(
-            'id' => $module['id'],
+            'id' => $module['id_module'],
             'name' => $module['name'],
             'starting_date' => $module['starting_date'],
             'state' => $module['state'],
             'temp' => $module['temp'],
             'speed' => $module['speed'],
-            'passagers' => $module['passengers'],
+            'passengers' => $module['passengers'],
         );
         array_push($data, $moduleData);
     }
