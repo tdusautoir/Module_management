@@ -2,7 +2,7 @@
 
 header('Content-type: application/json');
 
-require 'config.php';
+require_once 'config.php';
 
 $data = array();
 
