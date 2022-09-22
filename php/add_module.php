@@ -7,7 +7,7 @@ require_once 'config.php';
 $data = array();
 
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
-    if (isset($_POST['name'])) {
+    if (isset($_POST['name']) && !empty($_POST['name'])) {
 
         $db->beginTransaction();
 
@@ -24,6 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         } else {
             $data['success'] = "L'ajout du module $module_name est un succés.";
         }
+    } else {
+        $data['error'] = "Veuillez inscrire un nom.";
     }
 } else {
     $data['error'] = "Une erreur est survenue.";

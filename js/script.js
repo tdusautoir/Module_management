@@ -3,7 +3,8 @@ const submitbtn = document.getElementById("submit");
 const moduleList = document.querySelector(".module-list");
 const historyList = document.querySelector(".history-list");
 const refreshbtn = document.getElementById("refreshbtn");
-let refresh = true;
+const modal = document.getElementById("modal");
+let refresh = false;
 
 //button de rafraichissement
 refreshbtn.onclick = (e) => {
@@ -30,8 +31,9 @@ submitbtn.onclick = () => {
       if (xhr.status === 200) {
         let jsondata = JSON.parse(xhr.responseText);
         // console.log(jsondata);
+        DisplayModal(jsondata.success, "success");
         if (jsondata.error != undefined) {
-          //erreur
+          DisplayModal(jsondata.error, "error");
         }
       }
     }
@@ -121,7 +123,7 @@ xhr.send();
 
 //rafraichir les infos toutes les time ms
 setInterval(() => {
-  if (!refresh) {
+  if (refresh) {
     //rafraichissement est activé
     let xhr = new XMLHttpRequest();
     xhr.open("GET", "./php/get_module.php", true);
@@ -235,7 +237,7 @@ function msToHMS(ms) {
 
 //script pour changer l'etat aléatoirement
 function changeRandomState() {
-  if (!refresh) {
+  if (refresh) {
     //Ajax, ajout du module
     let xhr = new XMLHttpRequest();
     xhr.open("POST", "./php/change_random_state.php", true);
@@ -243,10 +245,17 @@ function changeRandomState() {
       if (xhr.readyState === XMLHttpRequest.DONE) {
         if (xhr.status === 200) {
           //recuperer les données au format json
+          console.log(xhr.responseText);
           let jsondata = JSON.parse(xhr.responseText);
           // console.log(jsondata);
           if (jsondata.error != undefined) {
-            //erreur
+            DisplayModal(jsondata.error, "error");
+          } else if (jsondata.success_1) {
+            //Un module aléatoire est réparé
+            DisplayModal(jsondata.success_1, "success");
+          } else {
+            //Un module aléatoire est devenu en panne
+            DisplayModal(jsondata.success_2, "error");
           }
         }
       }
@@ -282,7 +291,7 @@ function changeState(moduleId) {
 
 //changer les valeurs des modules aléatoirement toutes les 3 secondes
 setInterval(() => {
-  if (!refresh) {
+  if (refresh) {
     let xhr = new XMLHttpRequest();
     xhr.open("POST", "./php/update_module.php", true);
     xhr.onload = () => {
@@ -356,7 +365,7 @@ xhr2.send();
 
 //rafraichir les infos toutes les time ms
 setInterval(() => {
-  if (!refresh) {
+  if (refresh) {
     let xhr2 = new XMLHttpRequest();
     xhr2.open("GET", "./php/get_history.php", true);
     xhr2.onload = () => {
@@ -411,3 +420,14 @@ setInterval(() => {
     xhr2.send();
   }
 }, 2000);
+
+//function pour afficher la modal
+function DisplayModal(text, type) {
+  modal.className += ` active ${type}`;
+  modal.innerHTML = `<p>${text}<p>`;
+
+  //fermer la modal au bout de 4s
+  setTimeout(() => {
+    modal.className = "my-modal";
+  }, 4000);
+}

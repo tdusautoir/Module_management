@@ -1,4 +1,6 @@
 <?php
+
+require_once('./php/config.php');
 ?>
 
 <!DOCTYPE html>
@@ -17,6 +19,12 @@
 <body>
     <div class="content">
         <h1>Module Manager</h1>
+
+
+        <div class="controller">
+            <button id="refreshbtn">Play</button>
+        </div>
+
         <section class="module-manager">
             <form id="form" method="POST">
                 <div>
@@ -38,8 +46,8 @@
             </ul>
         </section>
 
-        <div class="controller">
-            <button id="refreshbtn">Pause</button>
+        <div class="my-modal" id="modal">
+            <p>Une erreur est survenue</p>
         </div>
     </div>
 </body>
