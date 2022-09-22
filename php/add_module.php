@@ -1,6 +1,10 @@
 <?php
 
+header('Content-type: application/json');
+
 require_once 'config.php';
+
+$data = array();
 
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
     if (isset($_POST['name'])) {
@@ -15,11 +19,14 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         $db->commit();
 
         if (!$stmt) {
-            print_r($db->errorInfo());
+            // print_r($db->errorInfo());
+            $data['error'] = "Une erreur est survenue.";
         } else {
-            echo "success";
+            $data['success'] = "L'ajout du module $module_name est un succés.";
         }
     }
 } else {
-    return;
+    $data['error'] = "Une erreur est survenue.";
 }
+
+echo json_encode($data);

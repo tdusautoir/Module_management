@@ -1,8 +1,7 @@
 const form = document.getElementById("form");
 const submitbtn = document.getElementById("submit");
 const moduleList = document.querySelector(".module-list");
-
-const stateBtn = document.getElementById("reload-state");
+const historyList = document.querySelector(".history-list");
 const refreshbtn = document.getElementById("refreshbtn");
 let refresh = true;
 
@@ -29,12 +28,10 @@ submitbtn.onclick = () => {
   xhr.onload = () => {
     if (xhr.readyState === XMLHttpRequest.DONE) {
       if (xhr.status === 200) {
-        let data = xhr.response;
-        console.log(data);
-        if (data == "success") {
-          //php return success
-        } else {
-          //php return an error
+        let jsondata = JSON.parse(xhr.responseText);
+        // console.log(jsondata);
+        if (jsondata.error != undefined) {
+          //erreur
         }
       }
     }
@@ -53,19 +50,21 @@ xhr.onload = () => {
     if (xhr.status === 200) {
       //recuperer les données au format json
       let jsondata = JSON.parse(xhr.responseText);
-      console.log(jsondata);
+      // console.log(jsondata);
 
-      //afficher les données
+      //afficher les modules
       let output = [];
-      jsondata.map((module) => {
-        //html pour chaque module
-        if (module.state === 2 || module.state === 0) {
-          //module en panne ou éteint donc ne pas afficher le timer
-          output = [
-            ...output,
-            `<div class='card ${
-              module.state === 2 ? "background-red" : "background-gray"
-            } module-${module.id}'>
+
+      if (jsondata.error == undefined) {
+        jsondata.map((module) => {
+          //html pour chaque module
+          if (module.state === 2 || module.state === 0) {
+            //module en panne ou éteint donc ne pas afficher le timer
+            output = [
+              ...output,
+              `<div class='card ${
+                module.state === 2 ? "background-red" : "background-gray"
+              } module-${module.id}'>
               <div class='card-body'>
                 <h5 class='card-title'>${
                   module.name
@@ -84,11 +83,11 @@ xhr.onload = () => {
                 }' onclick='changeState(${module.id})'>redemarrer</button>
               </div>
             </div>`,
-          ];
-        } else {
-          output = [
-            ...output,
-            `<div class='card module-${module.id}'>
+            ];
+          } else {
+            output = [
+              ...output,
+              `<div class='card module-${module.id}'>
               <div class='card-body'>
               <h5 class='card-title'>${
                 module.name
@@ -107,17 +106,20 @@ xhr.onload = () => {
                 })'>éteindre</button>
               </div>
             </div>`,
-          ];
-        }
-      });
-      //conversion du tableau vers une chaine de caractères sans virgules.
+            ];
+          }
+        });
+      } else {
+        output = [`<p>${jsondata.error}</p>`];
+      }
+      //conversion du tableau vers une chaine de caractères sans virgules et les inserer dans moduleList.
       moduleList.innerHTML = output.join("");
     }
   }
 };
 xhr.send();
 
-//rafraichir les infos toutes les 1000ms
+//rafraichir les infos toutes les time ms
 setInterval(() => {
   if (!refresh) {
     //rafraichissement est activé
@@ -128,25 +130,30 @@ setInterval(() => {
         if (xhr.status === 200) {
           //recuperer les données en json
           let jsondata = JSON.parse(xhr.responseText);
+          // console.log(jsondata);
 
-          //afficher les données
+          //afficher les modules
           let output = [];
-          jsondata.map((module) => {
-            //recuperer le moment ou le module a été démarré
-            var startingDate = new Date(
-              module.starting_date.replace(/-/g, "/")
-            );
-            var currentDate = new Date();
-            var time = new Date(currentDate.getTime() - startingDate.getTime());
-            var timer = msToHMS(time.getTime());
 
-            if (module.state == 2 || module.state == 0) {
-              //module en panne ou éteint donc ne pas afficher le timer
-              output = [
-                ...output,
-                `<div class='card ${
-                  module.state == 2 ? "background-red" : "background-gray"
-                } module-${module.id}'>
+          if (jsondata.error == undefined) {
+            jsondata.map((module) => {
+              //recuperer le moment ou le module a été démarré
+              var startingDate = new Date(
+                module.starting_date.replace(/-/g, "/")
+              );
+              var currentDate = new Date();
+              var time = new Date(
+                currentDate.getTime() - startingDate.getTime()
+              );
+              var timer = msToHMS(time.getTime());
+
+              if (module.state == 2 || module.state == 0) {
+                //module en panne ou éteint donc ne pas afficher le timer
+                output = [
+                  ...output,
+                  `<div class='card ${
+                    module.state == 2 ? "background-red" : "background-gray"
+                  } module-${module.id}'>
                   <div class='card-body'>
                     <h5 class='card-title'>${
                       module.name
@@ -168,11 +175,11 @@ setInterval(() => {
                     }' onclick='changeState(${module.id})'>redemarrer</button>
                   </div>
                 </div>`,
-              ];
-            } else {
-              output = [
-                ...output,
-                `<div class='card module-${module.id}'>
+                ];
+              } else {
+                output = [
+                  ...output,
+                  `<div class='card module-${module.id}'>
                   <div class='card-body'>
                     <h5 class='card-title'>${
                       module.name
@@ -192,10 +199,13 @@ setInterval(() => {
                     })'>éteindre</button>
                   </div>
                 </div>`,
-              ];
-            }
-          });
-          //conversion du tableau vers une chaine de caractères sans virgules.
+                ];
+              }
+            });
+          } else {
+            output = [`<p>${jsondata.error}</p>`];
+          }
+          //conversion du tableau vers une chaine de caractères sans virgules et les inserer dans moduleList.
           moduleList.innerHTML = output.join("");
         }
       }
@@ -232,12 +242,11 @@ function changeRandomState() {
     xhr.onload = () => {
       if (xhr.readyState === XMLHttpRequest.DONE) {
         if (xhr.status === 200) {
-          let data = xhr.response;
-          console.log(data);
-          if (data == "success") {
-            //php return success
-          } else {
-            //php return an error
+          //recuperer les données au format json
+          let jsondata = JSON.parse(xhr.responseText);
+          // console.log(jsondata);
+          if (jsondata.error != undefined) {
+            //erreur
           }
         }
       }
@@ -247,7 +256,6 @@ function changeRandomState() {
     var min = 5,
       max = 20;
     var rand = Math.floor(Math.random() * (max - min + 1) + min); //generer nombre aleatoire entre 5 et 20
-    console.log("Wait for " + rand + " seconds");
     setTimeout(changeRandomState, rand * 1000);
   }
 }
@@ -261,12 +269,10 @@ function changeState(moduleId) {
   xhr.onload = () => {
     if (xhr.readyState === XMLHttpRequest.DONE) {
       if (xhr.status === 200) {
-        let data = xhr.response;
-        console.log(data);
-        if (data == "success") {
-          //php return success
-        } else {
-          //php return an error
+        let jsondata = JSON.parse(xhr.responseText);
+        // console.log(jsondata);
+        if (jsondata.error != undefined) {
+          //erreur
         }
       }
     }
@@ -282,12 +288,10 @@ setInterval(() => {
     xhr.onload = () => {
       if (xhr.readyState === XMLHttpRequest.DONE) {
         if (xhr.status === 200) {
-          let data = xhr.response;
-          console.log(data);
-          if (data == "success") {
-            //php return success
-          } else {
-            //php return an error
+          let jsondata = JSON.parse(xhr.responseText);
+          // console.log(jsondata);
+          if (jsondata.error != undefined) {
+            //erreur
           }
         }
       }
@@ -295,3 +299,115 @@ setInterval(() => {
     xhr.send();
   }
 }, 3000);
+
+// recuperer l'historique
+let xhr2 = new XMLHttpRequest();
+xhr2.open("GET", "./php/get_history.php", true);
+xhr2.onload = () => {
+  if (xhr2.readyState === XMLHttpRequest.DONE) {
+    if (xhr2.status === 200) {
+      let jsondata = JSON.parse(xhr2.responseText);
+
+      //afficher l'historique
+      let output = [];
+      // console.log(jsondata);
+
+      if (jsondata.error == undefined) {
+        jsondata.map((module) => {
+          let state = "";
+          if (module.state == 2) {
+            state = "en panne";
+          } else if (module.state == 1) {
+            state = "en marche";
+          } else {
+            state = "éteint";
+          }
+
+          output = [
+            ...output,
+            `<li>${
+              " Module : '" +
+              module.name +
+              "' - " +
+              module.date_history +
+              " - temp: " +
+              module.temp +
+              ", vitesse: " +
+              module.speed +
+              ", passagers: " +
+              module.passengers +
+              ", état : " +
+              state
+            }</li>`,
+          ];
+        });
+      } else {
+        output = [`<p>${jsondata.error}</p>`];
+      }
+
+      // console.log(output);
+
+      //conversion du tableau historique vers une chaine de caractères sans virgules et les inserer dans historyList
+      historyList.innerHTML = output.join("");
+    }
+  }
+};
+xhr2.send();
+
+//rafraichir les infos toutes les time ms
+setInterval(() => {
+  if (!refresh) {
+    let xhr2 = new XMLHttpRequest();
+    xhr2.open("GET", "./php/get_history.php", true);
+    xhr2.onload = () => {
+      if (xhr2.readyState === XMLHttpRequest.DONE) {
+        if (xhr2.status === 200) {
+          let jsondata = JSON.parse(xhr2.responseText);
+
+          //afficher l'historique
+          let output = [];
+          // console.log(jsondata);
+
+          if (jsondata.error == undefined) {
+            jsondata.map((module) => {
+              let state = "";
+              if (module.state == 2) {
+                state = "en panne";
+              } else if (module.state == 1) {
+                state = "en marche";
+              } else {
+                state = "éteint";
+              }
+
+              output = [
+                ...output,
+                `<li>${
+                  " Module : '" +
+                  module.name +
+                  "' - " +
+                  module.date_history +
+                  " - temp: " +
+                  module.temp +
+                  ", vitesse: " +
+                  module.speed +
+                  ", passagers: " +
+                  module.passengers +
+                  ", état : " +
+                  state
+                }</li>`,
+              ];
+            });
+          } else {
+            output = [`<p>${jsondata.error}</p>`];
+          }
+
+          // console.log(output);
+
+          //conversion du tableau historique vers une chaine de caractères sans virgules et les inserer dans historyList
+          historyList.innerHTML = output.join("");
+        }
+      }
+    };
+    xhr2.send();
+  }
+}, 2000);

@@ -17,21 +17,30 @@
 <body>
     <div class="content">
         <h1>Module Manager</h1>
+        <section class="module-manager">
+            <form id="form" method="POST">
+                <div>
+                    <label for="name" class="form-label">Nom du module</label>
+                    <input type="name" class="form-control mb-2" name="name">
+                    <!-- border-danger -->
+                    <button id="submit" type="submit" name="submit" class="btn btn-primary">Ajouter un module</button>
+                </div>
+            </form>
+            <div class="module-container">
+                <div class="module-list">
+                </div>
+            </div>
+        </section>
 
-        <form id="form" method="POST">
-            <div>
-                <label for="name" class="form-label">Nom du module</label>
-                <input type="name" class="form-control mb-2" name="name">
-                <!-- border-danger -->
-                <button id="submit" type="submit" name="submit" class="btn btn-primary">Ajouter un module</button>
-            </div>
-        </form>
-        <div class="module-container">
-            <div class="module-list">
-            </div>
+        <section class="history">
+            <h2>Historique</h2>
+            <ul class="history-list">
+            </ul>
+        </section>
+
+        <div class="controller">
+            <button id="refreshbtn">Pause</button>
         </div>
-
-        <button id="refreshbtn">Pause</button>
     </div>
 </body>
 <script src="./js/script.js"></script>

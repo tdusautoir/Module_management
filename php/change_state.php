@@ -1,6 +1,10 @@
 <?php
 
+header('Content-type: application/json');
+
 require_once 'config.php';
+
+$data = array();
 
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
     if (isset($_GET['id'])) {
@@ -18,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         if ($currentState == 1) { //en marche donc --> éteint
             $stmt = $db->query("UPDATE module SET state = 0 WHERE module.id = $moduleId");
             //enlever ses informations
-            $stmt = $db->query("UPDATE history INNER JOIN module ON history.id_module = module.id SET temp = null, speed = null, passengers = null  WHERE module.id = $moduleId");
+            $stmt = $db->query("INSERT INTO history (id_module, temp, speed, passengers) VALUES ($moduleId, NULL, NULL, NULL)");
         } else { //eteint ou en panne donc --> en marche
             $stmt = $db->query("UPDATE module SET state = 1, starting_date = CURRENT_TIMESTAMP() WHERE module.id = $moduleId");
         }
@@ -26,13 +30,16 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         $db->commit();
 
         if (!$stmt) {
-            print_r($db->errorInfo());
+            // get info error -> print_r($db->errorInfo());
+            $data['error'] = "Une erreur est survenue.";
         } else {
-            echo "success";
+            $data['success'] = "L'etat a bien été modifié.";
         }
     } else {
-        return;
+        $data['error'] = "Une erreur est survenue.";
     }
 } else {
-    return;
+    $data['error'] = "Une erreur est survenue.";
 }
+
+echo json_encode($data);

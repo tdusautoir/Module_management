@@ -70,3 +70,26 @@ h1{
 .indicator.state-0{
     background: #c3c3c3;;
 }
+
+.history{
+    margin-top: 40px;
+}
+
+.history .history-list{
+    font-size: 14px;
+    list-style: none;
+    margin: 0;
+    margin-top: 40px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    border: 1px solid #ced4da;
+    border-radius: 10px;
+    color: #5c5c5c;
+}
+
+.controller{
+    position: fixed;
+    top: 0;
+}

@@ -20,6 +20,7 @@ if ($getModule->rowCount() > 0) {
             'temp' => $module['temp'],
             'speed' => $module['speed'],
             'passengers' => $module['passengers'],
+            'date_history' => $module['date']
         );
         array_push($data, $moduleData);
     }
