@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             // get info error -> print_r($db->errorInfo());
             $data['error'] = "Une erreur est survenue.";
         } else {
-            $data['success'] = "L'etat a bien été modifié.";
+            $data['success'] = "L'etat du module $moduleId a bien été modifié.";
         }
     } else {
         $data['error'] = "Une erreur est survenue.";

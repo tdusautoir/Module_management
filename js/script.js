@@ -4,7 +4,40 @@ const moduleList = document.querySelector(".module-list");
 const historyList = document.querySelector(".history-list");
 const refreshbtn = document.getElementById("refreshbtn");
 const modal = document.getElementById("modal");
+const ctx = document.getElementById("myChart").getContext("2d");
+
+//variables
 let refresh = false;
+let time = 1000;
+
+//données du graphique
+let dataChart = {
+  //variable pour les données du graphique
+  labels: [],
+  datasets: [
+    {
+      label: "Nombre de passagers",
+      data: [],
+      backgroundColor: ["rgba(54, 162, 235, 0.2)"],
+      borderColor: ["rgb(153, 102, 255)"],
+      borderWidth: 1,
+    },
+  ],
+};
+
+//graphique avec chart js
+const myChart = new Chart(ctx, {
+  type: "bar",
+  data: dataChart,
+  options: {
+    responsive: false,
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
+    },
+  },
+});
 
 //button de rafraichissement
 refreshbtn.onclick = (e) => {
@@ -44,6 +77,24 @@ submitbtn.onclick = () => {
   xhr.send(formData);
 };
 
+//fonction pour ajouter des données dans le graphique
+function addData(chart, label, data) {
+  chart.data.labels.push(label);
+  chart.data.datasets.forEach((dataset) => {
+    dataset.data.push(data);
+  });
+  chart.update();
+}
+
+//fonction pour retirer les anciennes données dans le graphique
+function removeData(chart) {
+  chart.data.labels.pop();
+  chart.data.datasets.forEach((dataset) => {
+    dataset.data.pop();
+  });
+  chart.update();
+}
+
 //recuperer les infos
 let xhr = new XMLHttpRequest();
 xhr.open("GET", "./php/get_module.php", true);
@@ -59,6 +110,9 @@ xhr.onload = () => {
 
       if (jsondata.error == undefined) {
         jsondata.map((module) => {
+          //ajouter les données dans le graphique
+          addData(myChart, module.name, module.passengers);
+
           //html pour chaque module
           if (module.state === 2 || module.state === 0) {
             //module en panne ou éteint donc ne pas afficher le timer
@@ -69,7 +123,7 @@ xhr.onload = () => {
               } module-${module.id}'>
               <div class='card-body'>
                 <h5 class='card-title'>${
-                  module.name
+                  module.id + " - " + module.name
                 }<span class='indicator state-${module.state}'></span></h5>
                 <div class="card-text">
                   <p>Vitesse : ${
@@ -92,7 +146,7 @@ xhr.onload = () => {
               `<div class='card module-${module.id}'>
               <div class='card-body'>
               <h5 class='card-title'>${
-                module.name
+                module.id + " - " + module.name
               }<span class='indicator state-${module.state}'></span></h5>
                 <div class="card-text">
                   <p>Vitesse : ${
@@ -133,11 +187,15 @@ setInterval(() => {
           //recuperer les données en json
           let jsondata = JSON.parse(xhr.responseText);
           // console.log(jsondata);
-
           //afficher les modules
           let output = [];
 
           if (jsondata.error == undefined) {
+            //retirer les anciennes données dans le graphique
+            for (let i = 0; i < jsondata.length; i++) {
+              removeData(myChart);
+            }
+
             jsondata.map((module) => {
               //recuperer le moment ou le module a été démarré
               var startingDate = new Date(
@@ -147,7 +205,14 @@ setInterval(() => {
               var time = new Date(
                 currentDate.getTime() - startingDate.getTime()
               );
+
+              //initaliser le timer
               var timer = msToHMS(time.getTime());
+
+              //ajouter les données dans le graphique
+              addData(myChart, module.name, module.passengers);
+              //ne pas faire d'animations à l'ajout de la donnée
+              myChart.update("none");
 
               if (module.state == 2 || module.state == 0) {
                 //module en panne ou éteint donc ne pas afficher le timer
@@ -158,7 +223,7 @@ setInterval(() => {
                   } module-${module.id}'>
                   <div class='card-body'>
                     <h5 class='card-title'>${
-                      module.name
+                      module.id + " - " + module.name
                     }<span class='indicator state-${module.state}'></span></h5>
                     <h6 class="card-subtitle timer mb-2 text-muted">${
                       module.state == 2 ? "En panne" : "Éteint"
@@ -184,7 +249,7 @@ setInterval(() => {
                   `<div class='card module-${module.id}'>
                   <div class='card-body'>
                     <h5 class='card-title'>${
-                      module.name
+                      module.id + " - " + module.name
                     }<span class='indicator state-${module.state}'></span></h5>
                     <h6 class="card-subtitle timer mb-2 text-muted">${timer}</h6>
                     <div class="card-text">
@@ -279,9 +344,12 @@ function changeState(moduleId) {
     if (xhr.readyState === XMLHttpRequest.DONE) {
       if (xhr.status === 200) {
         let jsondata = JSON.parse(xhr.responseText);
-        // console.log(jsondata);
         if (jsondata.error != undefined) {
           //erreur
+          DisplayModal(jsondata.error, "error");
+        } else {
+          //success
+          DisplayModal(jsondata.success, "success");
         }
       }
     }
@@ -335,7 +403,9 @@ xhr2.onload = () => {
           output = [
             ...output,
             `<li>${
-              " Module : '" +
+              "module - id : " +
+              module.id +
+              " - nom : '" +
               module.name +
               "' - " +
               module.date_history +
@@ -391,7 +461,9 @@ setInterval(() => {
               output = [
                 ...output,
                 `<li>${
-                  " Module : '" +
+                  "module - id : " +
+                  module.id +
+                  " - nom : '" +
                   module.name +
                   "' - " +
                   module.date_history +

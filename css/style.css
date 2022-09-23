@@ -89,6 +89,10 @@ h1{
     color: #5c5c5c;
 }
 
+.history-list li{
+    padding: 5px;
+}
+
 .controller{
     text-align: right;
 }
@@ -122,4 +126,13 @@ h1{
     background: #ffacac59;
     color: var(--bs-danger);
     border: 1px solid var(--bs-danger);
+}
+
+.chart{
+    margin-top: 40px;
+}
+
+.chart canvas{
+    margin: 0 auto;
+    margin-top: 20px;
 }
