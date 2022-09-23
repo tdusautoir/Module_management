@@ -49,6 +49,26 @@ h1{
     margin-top: 30px;
 }
 
+.module-list .card .card-body{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.module-list .card .buttons{
+    display: flex;
+    justify-content: space-between;
+}
+
+.module-list .card .buttons .btn-gray{
+    background: #e6e6e6;
+}
+
+.module-list .card .buttons .btn-gray:hover{
+   border: 1px solid black;
+}
+
+
 .indicator{
     content: "";
     width: 12px;
@@ -94,11 +114,14 @@ h1{
 }
 
 .controller{
-    text-align: right;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 5px;
 }
 
 .my-modal{
-    position: absolute;
+    position: fixed;
     top: 25px;
     text-align: center;
     height: fit-content;

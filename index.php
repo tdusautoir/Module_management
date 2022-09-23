@@ -25,7 +25,8 @@ require_once('./php/config.php');
 
 
         <div class="controller">
-            <button id="refreshbtn">Play</button>
+            <p>Rafraichissement : </p>
+            <button class="btn btn-secondary" id="refreshbtn">Off</button>
         </div>
 
         <section class="module-manager">

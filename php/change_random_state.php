@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             $data['success_2'] = "Le module $randomModuleId est en panne.";
         }
     } else {
-        $data['error'] = "Aucun module existant.";
+        $data['error-empty'] = "Aucun module existant en marche.";
     }
 } else {
     $data['error'] = "Une erreur est survenue.";

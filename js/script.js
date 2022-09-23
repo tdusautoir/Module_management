@@ -8,7 +8,7 @@ const ctx = document.getElementById("myChart").getContext("2d");
 
 //variables
 let refresh = false;
-let time = 1000;
+let refreshTime = 2000;
 
 //données du graphique
 let dataChart = {
@@ -44,10 +44,10 @@ refreshbtn.onclick = (e) => {
   e.preventDefault(); //empecher le comportement par defaut
   if (refresh) {
     refresh = false;
-    refreshbtn.innerHTML = "Play";
+    refreshbtn.innerHTML = "Off";
   } else {
     refresh = true;
-    refreshbtn.innerHTML = "Pause";
+    refreshbtn.innerHTML = "On";
   }
 };
 
@@ -111,7 +111,7 @@ xhr.onload = () => {
       if (jsondata.error == undefined) {
         jsondata.map((module) => {
           //ajouter les données dans le graphique
-          addData(myChart, module.name, module.passengers);
+          addData(myChart, module.id + "-" + module.name, module.passengers);
 
           //html pour chaque module
           if (module.state === 2 || module.state === 0) {
@@ -134,9 +134,14 @@ xhr.onload = () => {
                   }</p>
                   <p>Passagers : ${module.passengers}</p>
                 </div>
-                <button class='btn ${
-                  module.state == 2 ? "btn-danger" : "btn-light"
-                }' onclick='changeState(${module.id})'>redemarrer</button>
+                <div class='buttons'>
+                  <button class='btn ${
+                    module.state == 2 ? "btn-danger" : "btn-light"
+                  }' onclick='changeState(${module.id})'>redemarrer</button>
+                  <button class='btn btn-gray' onclick='deleteModule(${
+                    module.id
+                  })'>X</button> 
+                </div>
               </div>
             </div>`,
             ];
@@ -157,9 +162,14 @@ xhr.onload = () => {
                   }</p>
                   <p>Passagers : ${module.passengers}</p>
                 </div>
-                <button class='btn btn-light' onclick='changeState(${
-                  module.id
-                })'>éteindre</button>
+                <div class='buttons'>
+                  <button class='btn btn-light' onclick='changeState(${
+                    module.id
+                  })'>éteindre</button>
+                  <button class='btn btn-gray' onclick='deleteModule(${
+                    module.id
+                  })'>X</button> 
+                </div>
               </div>
             </div>`,
             ];
@@ -190,12 +200,11 @@ setInterval(() => {
           //afficher les modules
           let output = [];
 
-          if (jsondata.error == undefined) {
-            //retirer les anciennes données dans le graphique
-            for (let i = 0; i < jsondata.length; i++) {
-              removeData(myChart);
-            }
+          //recuperer les données pour le chart
+          let dataForChart = [];
+          let labelForChart = [];
 
+          if (jsondata.error == undefined) {
             jsondata.map((module) => {
               //recuperer le moment ou le module a été démarré
               var startingDate = new Date(
@@ -209,10 +218,9 @@ setInterval(() => {
               //initaliser le timer
               var timer = msToHMS(time.getTime());
 
-              //ajouter les données dans le graphique
-              addData(myChart, module.name, module.passengers);
-              //ne pas faire d'animations à l'ajout de la donnée
-              myChart.update("none");
+              //recuperer les données pour le graphique
+              dataForChart = [...dataForChart, module.passengers];
+              labelForChart = [...labelForChart, module.id + "-" + module.name];
 
               if (module.state == 2 || module.state == 0) {
                 //module en panne ou éteint donc ne pas afficher le timer
@@ -237,9 +245,14 @@ setInterval(() => {
                       }</p>
                       <p>Passagers : ${module.passengers}</p>
                     </div>
-                    <button class='btn ${
-                      module.state == 2 ? "btn-danger" : "btn-light"
-                    }' onclick='changeState(${module.id})'>redemarrer</button>
+                    <div class="buttons">
+                      <button class='btn ${
+                        module.state == 2 ? "btn-danger" : "btn-light"
+                      }' onclick='changeState(${module.id})'>redemarrer</button>
+                      <button class='btn btn-gray' onclick='deleteModule(${
+                        module.id
+                      })'>X</button> 
+                    </div>
                   </div>
                 </div>`,
                 ];
@@ -261,9 +274,14 @@ setInterval(() => {
                       }</p>
                       <p>Passagers : ${module.passengers}</p>
                     </div>
-                    <button class='btn btn-light' onclick='changeState(${
-                      module.id
-                    })'>éteindre</button>
+                    <div class='buttons'>
+                      <button class='btn btn-light' onclick='changeState(${
+                        module.id
+                      })'>éteindre</button>
+                      <button class='btn btn-gray' onclick='deleteModule(${
+                        module.id
+                      })'>X</button> 
+                    </div>
                   </div>
                 </div>`,
                 ];
@@ -274,12 +292,17 @@ setInterval(() => {
           }
           //conversion du tableau vers une chaine de caractères sans virgules et les inserer dans moduleList.
           moduleList.innerHTML = output.join("");
+
+          //ajouter les nouvelles données dans le chart
+          myChart.data.labels = labelForChart;
+          myChart.data.datasets[0].data = dataForChart;
+          myChart.update();
         }
       }
     };
     xhr.send();
   }
-}, 2000);
+}, refreshTime);
 
 //millisecondes vers hh:mm:ss
 function msToHMS(ms) {
@@ -310,7 +333,7 @@ function changeRandomState() {
       if (xhr.readyState === XMLHttpRequest.DONE) {
         if (xhr.status === 200) {
           //recuperer les données au format json
-          console.log(xhr.responseText);
+          // console.log(xhr.responseText);
           let jsondata = JSON.parse(xhr.responseText);
           // console.log(jsondata);
           if (jsondata.error != undefined) {
@@ -491,7 +514,7 @@ setInterval(() => {
     };
     xhr2.send();
   }
-}, 2000);
+}, refreshTime);
 
 //function pour afficher la modal
 function DisplayModal(text, type) {
@@ -502,4 +525,25 @@ function DisplayModal(text, type) {
   setTimeout(() => {
     modal.className = "my-modal";
   }, 4000);
+}
+
+function deleteModule(moduleId) {
+  let xhr = new XMLHttpRequest();
+  let url = "./php/delete_module.php?id=" + moduleId;
+  xhr.open("POST", url, true);
+  xhr.onload = () => {
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+      if (xhr.status === 200) {
+        let jsondata = JSON.parse(xhr.responseText);
+        if (jsondata.error != undefined) {
+          //erreur
+          DisplayModal(jsondata.error, "error");
+        } else {
+          //success
+          DisplayModal(jsondata.success, "success");
+        }
+      }
+    }
+  };
+  xhr.send();
 }
